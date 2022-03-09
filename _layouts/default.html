@@ -19,6 +19,7 @@
 
         var countryData;
         var projectData;
+        var geoJSON;
 
         function processData() {
             if (projectData && countryData) {
@@ -29,9 +30,26 @@
                     } else {
                         f.properties.projectCount = 0;
                     }
+                    f.properties.popupContent = f.properties.NAME + " HAS " + f.properties.projectCount;
                 }
 
-                L.geoJson(countryData, {style: style}).addTo(map);
+                geoJSON = L.geoJson(
+                    countryData,
+                    {
+                        style: style,
+                        onEachFeature: function(feature, layer) {
+                            if (feature.properties && feature.properties.popupContent) {
+                                layer.bindPopup(feature.properties.popupContent, {closeButton: false, offset: L.point(0, -20)});
+                                layer.on('mouseover', function() { layer.openPopup(); });
+                                layer.on('mouseout', function() { layer.closePopup(); });
+                            }
+                        },
+                        pointToLayer: function (feature, latlng) {
+                            return L.circleMarker(latlng);
+                        }
+                    }
+                );
+                geoJSON.addTo(map);
             }
         }
 
